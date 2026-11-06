@@ -1,0 +1,77 @@
+{
+ "id": "demo",
+ "title": "Demo quiz – pacing basics",
+ "description": "Three questions to try the app: a single-answer question, an explanation slide and a multiple-answer question.",
+ "cover": "quizzes/demo/cover.png",
+ "time": 30,
+ "scoring": "partial",
+ "questions": [
+  {
+   "q": "What does this strip show?",
+   "img": "quizzes/demo/q01.png",
+   "choices": [
+    {
+     "t": "Normal ventricular pacing with capture",
+     "ok": true
+    },
+    {
+     "t": "Loss of capture",
+     "ok": false
+    },
+    {
+     "t": "Undersensing",
+     "ok": false
+    },
+    {
+     "t": "Oversensing",
+     "ok": false
+    }
+   ]
+  },
+  {
+   "q": "What does this strip show?",
+   "img": "quizzes/demo/q02.png",
+   "explain": "quizzes/demo/q02-explanation.png",
+   "choices": [
+    {
+     "t": "Normal ventricular pacing with capture",
+     "ok": false
+    },
+    {
+     "t": "Intermittent loss of ventricular capture",
+     "ok": true
+    },
+    {
+     "t": "Undersensing",
+     "ok": false
+    },
+    {
+     "t": "Oversensing",
+     "ok": false
+    }
+   ]
+  },
+  {
+   "q": "Which can cause loss of ventricular capture? (several answers)",
+   "time": 40,
+   "choices": [
+    {
+     "t": "Lead dislodgement",
+     "ok": true
+    },
+    {
+     "t": "Rise in pacing threshold",
+     "ok": true
+    },
+    {
+     "t": "Atrial fibrillation",
+     "ok": false
+    },
+    {
+     "t": "A pacing output well above threshold",
+     "ok": false
+    }
+   ]
+  }
+ ]
+}

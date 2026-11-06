@@ -1,0 +1,8 @@
+# État public des parties, relu chaque seconde par les téléphones : jamais en cache
+Options -Indexes
+<IfModule mod_headers.c>
+  Header set Cache-Control "no-store, max-age=0"
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive Off
+</IfModule>

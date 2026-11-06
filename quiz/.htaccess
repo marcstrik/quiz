@@ -1,0 +1,21 @@
+# Liryc Quiz
+Options -Indexes
+DirectoryIndex index.html
+AddDefaultCharset utf-8
+
+# Fichiers PHP internes : jamais servis directement
+<FilesMatch "^(config|lib)\.php$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Pages et scripts : toujours revalider (mises à jour visibles immédiatement)
+<FilesMatch "\.(html|js|css)$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "no-cache"
+  </IfModule>
+</FilesMatch>

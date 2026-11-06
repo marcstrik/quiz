@@ -1,0 +1,10 @@
+# Les fichiers .json contiennent les bonnes réponses : accès web interdit (les images restent publiques)
+Options -Indexes
+<FilesMatch "\.json$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Deny from all
+  </IfModule>
+</FilesMatch>

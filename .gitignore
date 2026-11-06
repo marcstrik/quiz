@@ -1,0 +1,13 @@
+# Secrets: copy quiz/config.example.php to quiz/config.php on your server
+quiz/config.php
+# Game data written by the app
+quiz/data/*
+!quiz/data/.htaccess
+!quiz/data/.gitkeep
+quiz/live/*
+!quiz/live/.htaccess
+!quiz/live/.gitkeep
+*.tmp
+.DS_Store
+Thumbs.db
+desktop.ini

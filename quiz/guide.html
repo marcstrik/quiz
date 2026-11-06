@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d6e85">
+  <title>Create a quiz – Live Quiz</title>
+  <meta name="description" content="Create a live quiz with Claude from your questions and answers.">
+  <link rel="icon" href="img/heart-128.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <style>
+    :root {
+      --teal: #0d6e85; --teal-dark: #0a5568; --cyan: #42b9d3; --cyan-soft: #e3f4f8; --navy: #012243;
+      --muted: #5d7186; --line: #cdd7e2; --bg: #f2f6f9; --paper: #fff; --ok: #2e9e6a; --bad: #d64550; --warn: #b7791f;
+      --radius: 12px; --shadow: 0 2px 10px rgba(1, 34, 67, .08);
+      font-family: "Open Sans", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--navy); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    header.bar { background: var(--teal); padding: 14px 16px; }
+    header.bar .in { max-width: 920px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    header.bar img { height: 30px; display: block; }
+    header.bar a { color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; opacity: .9; }
+    main { max-width: 920px; margin: 0 auto; padding: 32px 16px 64px; }
+    h1, h2, h3 { font-family: Montserrat, "Open Sans", sans-serif; line-height: 1.2; }
+    h1 { font-size: clamp(28px, 5vw, 40px); margin: 0 0 8px; }
+    .underline { width: 64px; height: 4px; background: var(--cyan); border-radius: 2px; margin: 0 0 20px; }
+    .lead { font-size: 18px; color: var(--muted); margin: 0 0 28px; max-width: 46em; }
+    h2 { font-size: 22px; margin: 44px 0 14px; }
+    h3 { font-size: 16px; margin: 22px 0 8px; }
+    p, li { max-width: 46em; }
+    a { color: var(--teal); }
+    code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .92em; background: var(--cyan-soft); padding: 1px 5px; border-radius: 4px; }
+    .steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    .steps li { background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 18px; border-top: 4px solid var(--cyan); }
+    .steps b { display: block; font-family: Montserrat, sans-serif; color: var(--teal); font-size: 15px; margin-bottom: 4px; }
+    .steps span { color: var(--muted); font-size: 14.5px; }
+    .card { background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; }
+    .note { border-left: 4px solid var(--cyan); background: var(--cyan-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    .prompt-wrap { position: relative; }
+    pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; font-family: Consolas, "Cascadia Mono", monospace; font-size: 13.5px; line-height: 1.55;
+          background: #0f2236; color: #e8eef4; border-radius: var(--radius); padding: 54px 20px 18px; max-height: 520px; overflow: auto; }
+    .copy { position: absolute; top: 10px; right: 12px; border: 0; border-radius: 8px; background: var(--cyan); color: var(--navy); font: 700 14px "Open Sans", sans-serif;
+            padding: 8px 14px; cursor: pointer; }
+    .copy:hover { background: #63c8de; }
+    table { width: 100%; border-collapse: collapse; background: var(--paper); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); font-size: 14.5px; }
+    th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: var(--teal); color: #fff; font-weight: 700; }
+    tr:last-child td { border-bottom: 0; }
+    td:first-child { white-space: nowrap; }
+    .tbl { overflow-x: auto; }
+    .drop { border: 2px dashed var(--line); border-radius: var(--radius); background: var(--paper); padding: 26px 18px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
+    .drop.over { border-color: var(--cyan); background: var(--cyan-soft); }
+    .drop b { font-family: Montserrat, sans-serif; }
+    .drop small { display: block; color: var(--muted); margin-top: 4px; }
+    #report { margin-top: 16px; }
+    .msg { padding: 8px 12px; border-radius: 8px; margin: 6px 0; font-size: 14.5px; }
+    .msg.err { background: #fbe9eb; color: #8e1f29; }
+    .msg.warn { background: #fdf3e1; color: #7a4f0f; }
+    .msg.ok { background: #e4f4ec; color: #1d6b46; }
+    .qprev { background: var(--paper); border-radius: 10px; box-shadow: var(--shadow); padding: 12px 14px; margin: 10px 0; }
+    .qprev .n { font-family: Montserrat, sans-serif; color: var(--teal); font-size: 13px; }
+    .qprev ul { margin: 6px 0 0; padding-left: 20px; }
+    .qprev li.good { color: var(--ok); font-weight: 700; }
+    .qprev .meta { color: var(--muted); font-size: 13px; }
+    footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 16px 32px; }
+  </style>
+</head>
+<body>
+  <header class="bar"><div class="in">
+    <img src="img/logo.png" alt="Live Quiz">
+    <a href="./">Play →</a>
+  </div></header>
+
+  <main>
+    <h1>Create a quiz with Claude</h1>
+    <div class="underline"></div>
+    <p class="lead">You have your questions, your answers and your tracings: Claude turns them into a ready-to-play quiz in a few minutes. No coding needed.</p>
+
+    <ol class="steps">
+      <li><b>1. Prepare</b><span>Your questions and answers (Word, PDF, PowerPoint, text, screenshots…) and the image for each question.</span></li>
+      <li><b>2. Give them to Claude</b><span>Open <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>, paste the instructions below and attach your files.</span></li>
+      <li><b>3. Check</b><span>Drop the <code>.json</code> file you get into the checker at the bottom of this page: it flags errors and previews the quiz.</span></li>
+      <li><b>4. Upload</b><span>Put the <code>.json</code> file and its image folder in <code>quizzes/</code> on your server.</span></li>
+    </ol>
+
+    <h2>1. What to prepare</h2>
+    <ul>
+      <li><b>The questions</b>, each with 2 to 6 answers and the correct one(s) clearly marked (bold, underlined, “Answer: B”…).</li>
+      <li><b>The images</b> (tracings, ECGs, EGMs, diagrams): one per question, PNG or JPG, ideally 16:9. Name them in order (<code>q01.png</code>, <code>q02.png</code>…) or simply attach the PowerPoint: Claude extracts the images.</li>
+      <li><b>Optional</b>: an explanation slide to show after the answer is revealed, the time per question (30 s by default), questions that count double.</li>
+      <li><b>The type of quiz</b>:
+        <ul>
+          <li><b>one correct answer per question</b> (like Kahoot): one tap on the phone answers;</li>
+          <li><b>one or more correct answers</b>: players tick their answers then press Validate, with partial points.</li>
+        </ul>
+      </li>
+    </ul>
+    <div class="note">Images must be readable on a screen shared in Zoom: at least 1200 px wide for a tracing, and no identifying patient data (name, date of birth, record number).</div>
+
+    <h2>2. The instructions to give Claude</h2>
+    <p>Copy this text into a new conversation on <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>, add your files, then send. Fill in the two lines in brackets at the end.</p>
+    <div class="prompt-wrap">
+      <button class="copy" type="button" id="copyBtn">Copy</button>
+      <pre id="prompt">You are going to create a quiz for my live quiz app, from the questions, answers and images I am sending you.
+
+DELIVERABLE
+A .zip file containing:
+- &lt;id&gt;.json: the quiz (format below);
+- a folder &lt;id&gt;/ with the images: cover.jpg (or .png), q01.png, q02.png… and, if any, q01-explanation.png…
+&lt;id&gt; = short name for the quiz: lowercase letters without accents, digits and hyphens (e.g. "conduction-disorders").
+
+JSON FILE FORMAT (UTF-8)
+{
+  "id": "&lt;id&gt;",
+  "title": "Title shown to players (short)",
+  "description": "One or two sentences introducing the quiz.",
+  "cover": "quizzes/&lt;id&gt;/cover.jpg",
+  "time": 30,
+  "scoring": "partial",
+  "single": false,
+  "questions": [
+    {
+      "q": "Question text",
+      "img": "quizzes/&lt;id&gt;/q01.png",
+      "time": 30,
+      "points": 1,
+      "choices": [
+        { "t": "Full answer text", "s": "Short version (optional)", "ok": true },
+        { "t": "Another answer", "ok": false }
+      ],
+      "explain": "quizzes/&lt;id&gt;/q01-explanation.png"
+    }
+  ]
+}
+
+RULES
+1. Each question has 2 to 6 answers, in the order of my documents, and at least one answer with "ok": true.
+2. Quiz type:
+   - if every question has exactly ONE correct answer: "single": true and "scoring": "exact" (one tap on the phone = the answer);
+   - otherwise: "single": false and "scoring": "partial" (partial points: each correct box ticked earns its share, each wrong box ticked takes one away).
+3. "time" (seconds): 30 by default for the quiz; a question may have its own "time" (20 to 90). "points": 1 by default, 2 for a question that counts double. Do not write "time" or "points" in a question when they equal the default.
+4. "q" and "t": keep my wording and my language word for word; only fix obvious spelling mistakes and typos, without changing the meaning.
+5. "s" (short version): only if "t" is longer than 70 characters; about 60 characters at most, same meaning. It is shown on the shared screen; phones show the full text.
+6. "img": one image per question if I provide one (otherwise leave "img" out). If my images are inside a PowerPoint, PDF or Word file, extract them. Trim useless white margins, maximum width 1600 px, PNG for tracings and diagrams, JPG for photos. Paths always start with "quizzes/&lt;id&gt;/".
+7. "explain": only if I provide an explanation slide for a question; it is shown when the answer is revealed.
+8. "cover": the cover image if I provide one, otherwise a copy of the first image of the quiz.
+9. Do not add any question, answer or correct answer. If a correct answer is unclear in my documents, ask me before delivering.
+10. Before delivering, check: valid JSON; every file referenced exists in the folder; same number of questions as in my documents. Then show a summary table: number, question, correct answer(s), image.
+
+MY QUIZ
+Title: [quiz title]
+Notes: [e.g. one correct answer per question; 45 s per question; question 10 counts double]</pre>
+    </div>
+    <p class="note">Claude needs to be able to create files (on by default on claude.ai). Always read the summary table: you are the one who validates the correct answers.</p>
+
+    <h2 id="verifier">3. Check the file</h2>
+    <p>Drop the <code>.json</code> file created by Claude here. The check runs in your browser: nothing is sent anywhere.</p>
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept=".json,application/json" hidden>
+      <b>Drop the .json file here</b>
+      <small>or click to choose it</small>
+    </label>
+    <div id="report"></div>
+
+    <h2>4. Putting it online</h2>
+    <p>Unzip it and upload <code>&lt;id&gt;.json</code> and the <code>&lt;id&gt;/</code> image folder into <code>quizzes/</code> on your server. The quiz then appears in the presenter’s list, next to the other quizzes. Players never see the correct answers before the reveal.</p>
+
+    <h2>Format reference</h2>
+    <div class="tbl"><table>
+      <tr><th>Field</th><th>Where</th><th>Purpose</th></tr>
+      <tr><td><code>id</code></td><td>quiz</td><td>Short name (lowercase, digits, hyphens), same as the file name and the image folder.</td></tr>
+      <tr><td><code>title</code>, <code>description</code></td><td>quiz</td><td>Shown in the waiting room.</td></tr>
+      <tr><td><code>cover</code></td><td>quiz</td><td>Waiting-room image.</td></tr>
+      <tr><td><code>time</code></td><td>quiz / question</td><td>Answer time in seconds (30 by default).</td></tr>
+      <tr><td><code>scoring</code></td><td>quiz</td><td><code>partial</code>: partial points; <code>exact</code>: all or nothing.</td></tr>
+      <tr><td><code>single</code></td><td>quiz</td><td><code>true</code>: one correct answer, one tap answers.</td></tr>
+      <tr><td><code>q</code></td><td>question</td><td>Question text.</td></tr>
+      <tr><td><code>img</code></td><td>question</td><td>Slide shown on the shared screen and on phones (zoomable).</td></tr>
+      <tr><td><code>points</code></td><td>question</td><td>Multiplier (2 = counts double).</td></tr>
+      <tr><td><code>choices</code></td><td>question</td><td>2 to 6 answers: <code>t</code> text, <code>s</code> short version (shared screen), <code>ok</code> correct answer.</td></tr>
+      <tr><td><code>explain</code></td><td>question</td><td>Explanation slide shown when the answer is revealed.</td></tr>
+    </table></div>
+    <p>Scoring: 1,000 points for an instant correct answer, 500 at the last second.</p>
+  </main>
+  <footer>Live Quiz · <a href="https://github.com/">source on GitHub</a></footer>
+
+  <script>
+  (() => {
+    'use strict';
+    const btn = document.getElementById('copyBtn');
+    btn.addEventListener('click', async () => {
+      const text = document.getElementById('prompt').textContent;
+      try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied ✓'; }
+      catch (e) {
+        const r = document.createRange(); r.selectNodeContents(document.getElementById('prompt'));
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Ctrl+C to copy';
+      }
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2500);
+    });
+
+    const drop = document.getElementById('drop'), input = document.getElementById('file'), report = document.getElementById('report');
+    const mk = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+    ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) check(e.dataTransfer.files[0]); });
+    input.addEventListener('change', () => { if (input.files[0]) check(input.files[0]); input.value = ''; });
+
+    async function check(file) {
+      report.replaceChildren();
+      const errs = [], warns = [];
+      let d;
+      try { d = JSON.parse(await file.text()); } catch (e) { return show([`The file is not valid JSON: ${e.message}`], [], null); }
+      if (typeof d !== 'object' || !d || Array.isArray(d)) return show(['The file must contain an object { … }.'], [], null);
+      const id = String(d.id || file.name.replace(/\.json$/i, ''));
+      if (!/^[a-z0-9_-]{1,40}$/.test(id)) errs.push(`Invalid “id” (${id}): lowercase letters without accents, digits and hyphens.`);
+      if (d.id && file.name.replace(/\.json$/i, '') !== d.id) warns.push(`The file should be named ${d.id}.json.`);
+      if (!d.title) errs.push('“title” is missing.');
+      if (!d.description) warns.push('No “description”: it is shown in the waiting room.');
+      if (d.scoring && !['partial', 'exact'].includes(d.scoring)) errs.push('“scoring” must be "partial" or "exact".');
+      const qs = d.questions;
+      if (!Array.isArray(qs) || !qs.length) errs.push('“questions” is missing or empty.');
+      const pathOk = p => typeof p === 'string' && p.startsWith(`quizzes/${id}/`) && /\.(png|jpe?g|webp|gif)$/i.test(p);
+      if (d.cover && !pathOk(d.cover)) warns.push(`“cover” should be a quizzes/${id}/… path to an image.`);
+      (Array.isArray(qs) ? qs : []).forEach((q, i) => {
+        const n = `Question ${i + 1}`;
+        if (!q || typeof q !== 'object') { errs.push(`${n}: wrong format.`); return; }
+        if (!q.q) errs.push(`${n}: question text “q” missing.`);
+        if (q.img && !pathOk(q.img)) errs.push(`${n}: “img” must start with quizzes/${id}/ and end with .png or .jpg.`);
+        if (q.explain && !pathOk(q.explain)) errs.push(`${n}: “explain” must start with quizzes/${id}/.`);
+        if (!q.img) warns.push(`${n}: no image.`);
+        const ch = q.choices;
+        if (!Array.isArray(ch) || ch.length < 2) { errs.push(`${n}: at least 2 answers are needed.`); return; }
+        if (ch.length > 6) errs.push(`${n}: 6 answers at most (${ch.length}).`);
+        const good = ch.filter(c => c && c.ok === true).length;
+        if (!good) errs.push(`${n}: no correct answer ("ok": true).`);
+        if (d.single && good > 1) errs.push(`${n}: ${good} correct answers but the quiz is single-answer ("single": true).`);
+        ch.forEach((c, j) => {
+          if (!c || !c.t) errs.push(`${n}, answer ${j + 1}: text “t” missing.`);
+          else if (c.t.length > 70 && !c.s) warns.push(`${n}, answer ${j + 1}: long text without a short version “s”.`);
+        });
+        if (q.time != null && !(q.time >= 5 && q.time <= 300)) errs.push(`${n}: “time” must be a number of seconds (5 to 300).`);
+        if (q.points != null && !(q.points > 0 && q.points <= 5)) errs.push(`${n}: “points” must be a multiplier between 0 and 5.`);
+      });
+      if (Array.isArray(qs) && qs.length && !d.single && qs.every(q => q && Array.isArray(q.choices) && q.choices.filter(c => c && c.ok).length === 1)) {
+        warns.push('Every question has a single correct answer: consider "single": true and "scoring": "exact" (one tap answers on the phone).');
+      }
+      show(errs, warns, Array.isArray(qs) ? d : null);
+    }
+
+    function show(errs, warns, d) {
+      errs.forEach(t => report.append(mk('div', 'msg err', '✘ ' + t)));
+      warns.forEach(t => report.append(mk('div', 'msg warn', '⚠ ' + t)));
+      if (!d) return;
+      if (!errs.length) {
+        const t = d.questions.map((q, i) => (q.time || d.time || 30));
+        report.append(mk('div', 'msg ok', `✔ Format OK: “${d.title}”, ${d.questions.length} questions, ${Math.min(...t)}–${Math.max(...t)} s per question, `
+          + (d.single ? 'one correct answer (one tap).' : (d.scoring === 'exact' ? 'all or nothing.' : 'partial points.'))
+          + ' Also check that every image is in the folder.'));
+      }
+      d.questions.forEach((q, i) => {
+        if (!q || typeof q !== 'object') return;
+        const box = mk('div', 'qprev');
+        box.append(mk('div', 'n', `Question ${i + 1}` + (q.points > 1 ? ` · ×${q.points}` : '') + (q.time ? ` · ${q.time} s` : '')));
+        box.append(mk('div', '', q.q || '(no question text)'));
+        const ul = mk('ul');
+        (Array.isArray(q.choices) ? q.choices : []).forEach(c => ul.append(mk('li', c && c.ok ? 'good' : '', (c && c.ok ? '✔ ' : '') + ((c && c.t) || '?'))));
+        box.append(ul);
+        box.append(mk('div', 'meta', [q.img && 'image: ' + q.img.split('/').pop(), q.explain && 'explanation: ' + q.explain.split('/').pop()].filter(Boolean).join(' · ') || 'no image'));
+        report.append(box);
+      });
+    }
+  })();
+  </script>
+</body>
+</html>
